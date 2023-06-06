@@ -4,9 +4,9 @@ from flask import Flask, request, jsonify
 from telegram import Bot, Update
 
 # Replace with your Telegram bot token obtained from BotFather
-TELEGRAM_BOT_TOKEN = '6059193114:AAEhxBZGBao1NRANcRzDhDL7aMlGJ0-JEw0'
+TELEGRAM_BOT_TOKEN = ''
 # Replace with your OpenAI API key
-OPENAI_API_KEY = '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'
+OPENAI_API_KEY = ''
 
 # A simple in-memory data structure to store stress keyword counts
 # In a production environment, consider using a more persistent storage, like a database
