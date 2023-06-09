@@ -2,7 +2,7 @@
 
 Care for the Carers is a chatbot service designed to assist caregivers who are experiencing stress. The chatbot is built using the GPT language model and is integrated with the Telegram messaging platform.
 
-This project was developed by a team of students from the Chinese University of Hong Kong (CUHK). The project won the CUHK World's Challenge Challenge competition and was selected to participate in the world final hosted by Western University.
+This project was developed by a team of students from the Chinese University of Hong Kong (CUHK). The project won the CUHK World's Challenge Challenge competition and was selected to participate in the world final hosted by Western University, in which it won the runner-up, obtaining a kickstart fund of CAD$15000.
 
 ## Getting Started
 
