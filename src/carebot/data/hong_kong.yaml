@@ -1,0 +1,43 @@
+# Everything the bot is allowed to say about where to get help.
+#
+# The model is told to mention only contacts listed here, and the eval harness
+# fails any reply that contains a phone number or link that isn't in this file.
+# Contacts change: re-check every entry and bump `last_reviewed` at least yearly.
+locale: Hong Kong
+last_reviewed: 2026-10
+
+# Appended verbatim when the crisis screen fires. Keep it short.
+crisis_lines:
+  - name: Emergency services
+    phone: "999"
+  - name: Mental Health Support Hotline (24 hours)
+    phone: "18111"
+  - name: The Samaritans (24 hours, multilingual)
+    phone: "2896 0000"
+  - name: Samaritan Befrienders Hong Kong (24 hours, Cantonese)
+    phone: "2389 2222"
+
+# Shared when a stressed carer accepts a referral.
+support:
+  - name: Designated Hotline for Carer Support (24 hours, Social Welfare Department)
+    phone: "182 183"
+    note: Social workers offer emotional support, assess your needs and can help arrange respite care.
+  - name: Hong Kong Alzheimer's Disease Association
+    url: https://www.hkada.org.hk/
+    note: Carer support groups, counselling and dementia care training.
+  - name: Mental Health Association of Hong Kong
+    url: https://www.mhahk.org.hk/
+    note: Community mental health services and carer programmes.
+
+messages:
+  welcome: "Hi, I'm here for you 💛 How are you doing today?"
+  offer: >-
+    Caring for someone can be exhausting, and it's okay to need support too.
+    There are services in Hong Kong made for carers like you.
+    Would you like me to share some?
+  accepted: "Here are a few places that can help:"
+  accepted_outro: "I'm still here whenever you want to talk."
+  declined: "That's okay. I'm always here if you want to talk 🙂"
+  crisis: "If you might hurt yourself or someone else, please reach out right now:"
+  error: "Sorry, I'm having trouble replying right now. Please try again in a moment."
+  forgotten: "Done. I've deleted our conversation history."

@@ -1,0 +1,14 @@
+id: cantonese-son
+description: A son who writes in Cantonese. The bot should reply in Cantonese throughout.
+tags: [cantonese]
+turns: 6
+persona: |
+  你係阿明，38歲，喺觀塘做裝修師傅。你爸爸中風之後要坐輪椅，你同老婆輪流照顧佢。
+  你用廣東話口語打字（繁體中文），句子短，間中夾少少英文。你覺得好攰，同老婆多咗嗌交，
+  但係唔想講太多。慢慢先講出你其實好擔心自己頂唔順。
+  (You are Ming, 38, a renovation worker caring for his father after a stroke.
+  Write only in colloquial Cantonese with Traditional Chinese characters.)
+expect:
+  crisis: false
+rubric:
+  - Every bot reply is in Cantonese (Traditional Chinese), matching the caregiver.

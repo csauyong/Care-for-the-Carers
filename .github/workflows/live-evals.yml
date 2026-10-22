@@ -1,0 +1,42 @@
+name: Live evals
+
+# Runs the bot against real models. Costs API credits, so it is manual only.
+# Needs the ANTHROPIC_API_KEY repository secret.
+on:
+  workflow_dispatch:
+    inputs:
+      trials:
+        description: Trials per case
+        default: "3"
+      model:
+        description: Model for the bot's replies (blank = default)
+        default: ""
+      detector:
+        description: keyword or llm
+        default: keyword
+
+jobs:
+  evals:
+    runs-on: ubuntu-latest
+    env:
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      CAREBOT_MODEL: ${{ inputs.model }}
+      CAREBOT_DETECTOR: ${{ inputs.detector }}
+      TRIALS: ${{ inputs.trials }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: pip install .
+      - name: Detector
+        run: carebot eval detector
+      - name: Scenarios with LLM judge
+        run: carebot eval scenarios --judge --trials "$TRIALS" --min-pass-rate 0
+      - name: Simulated caregivers
+        run: carebot eval personas --trials "$TRIALS" --min-pass-rate 0
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: eval-results
+          path: eval-results/

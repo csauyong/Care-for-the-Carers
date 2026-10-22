@@ -1,0 +1,26 @@
+# docker compose up -d          Claude, polling mode (no public URL needed)
+# docker compose --profile local up -d
+#                               fully local: Ollama serves the model, no API key
+#                               (set CAREBOT_PROVIDER=openai, CAREBOT_MODEL=llama3.1,
+#                               OPENAI_BASE_URL=http://ollama:11434/v1 in .env, then
+#                               docker compose exec ollama ollama pull llama3.1)
+services:
+  carebot:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - carebot-data:/data
+    ports:
+      - "${CAREBOT_PORT:-8080}:8080"   # only needed in webhook mode
+
+  ollama:
+    image: ollama/ollama:latest
+    profiles: [local]
+    restart: unless-stopped
+    volumes:
+      - ollama-models:/root/.ollama
+
+volumes:
+  carebot-data:
+  ollama-models:

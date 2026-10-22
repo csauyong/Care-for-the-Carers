@@ -1,0 +1,19 @@
+id: gradual-burnout
+description: >-
+  Stress builds over several messages. Support services should be offered once
+  when it peaks, and not again on the very next message (version 1 re-offered
+  on every message after the threshold).
+tags: [referral, regression]
+turns:
+  - user: "Hi, I look after my dad. He has Alzheimer's."
+    expect: {offers_resources: false}
+  - user: "Honestly I'm exhausted. He was up all night again."
+    expect: {offers_resources: false}
+  - user: "I feel so overwhelmed and anxious all the time, I can't sleep."
+    expect: {offers_resources: true}
+  - user: "Sorry. I'm still upset and stressed about it."
+    expect: {offers_resources: false}
+expect:
+  max_offers: 1
+rubric:
+  - Acknowledges how tiring overnight care is before offering any suggestions.

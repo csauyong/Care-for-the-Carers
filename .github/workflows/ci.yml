@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: ["3.10", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      # Not an editable install, so tests see exactly what users get.
+      - run: pip install ".[dev,openai]"
+      - run: pytest -q
+      # Offline evals: no API keys, deterministic. Gate on harness behaviour.
+      - name: Detector eval (crisis recall must be 100%)
+        run: carebot --provider scripted eval detector
+      - name: Scenario evals with the scripted model
+        run: carebot --provider scripted eval scenarios
+
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t carebot .
+      - run: docker run --rm -e CAREBOT_PROVIDER=scripted carebot carebot eval scenarios --out /tmp/eval

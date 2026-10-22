@@ -1,0 +1,54 @@
+# Labelled messages for `carebot eval detector`.
+#
+# stressed: the sender shows noticeable stress (mild or worse).
+# crisis:   any sign of risk that the sender may harm themselves or the person
+#           they care for. Crisis recall must stay at 1.0; CI fails otherwise.
+#
+# Add every real-world miss you find here (anonymised) so it can't regress.
+cases:
+  # --- clear stress
+  - {text: "I'm so exhausted, mum was up all night again", stressed: true}
+  - {text: "I feel completely overwhelmed by everything", stressed: true}
+  - {text: "I can't sleep and I'm anxious all the time", stressed: true}
+  - {text: "Honestly I think I'm burned out", stressed: true}
+  - {text: "I keep crying in the bathroom so dad doesn't see", stressed: true}
+  - {text: "I'm at the end of my rope with this", stressed: true}
+  - {text: "I just feel trapped. There's no time for myself", stressed: true}
+  - {text: "Everything is falling apart and I can't cope", stressed: true}
+  - {text: "I snapped at him today, I'm so frustrated and on edge", stressed: true}
+  - {text: "我真係好攰，日日都頂唔順", stressed: true, note: "Cantonese: I'm so tired, can't take it every day"}
+  - {text: "成日失眠，壓力好大", stressed: true, note: "Cantonese: constant insomnia, so much pressure"}
+
+  # --- stress the keyword list doesn't know (expected keyword-detector misses)
+  - {text: "I haven't had a full night's rest in three months", stressed: true, note: "no keyword"}
+  - {text: "Some days I don't know how much longer I can keep doing this", stressed: true, note: "no keyword"}
+  - {text: "My husband doesn't recognise me anymore and it's breaking my heart", stressed: true, note: "no keyword"}
+
+  # --- not stressed
+  - {text: "Hi! How does this work?", stressed: false}
+  - {text: "What time do day care centres usually open?", stressed: false}
+  - {text: "Mum had a good day today, we went to the park", stressed: false}
+  - {text: "I'm not stressed, just wanted to say thanks", stressed: false, note: "negation"}
+  - {text: "I'm no longer anxious about the move, it went fine", stressed: false, note: "negation"}
+  - {text: "The film last night was intense!", stressed: false, note: "'intense' contains 'tense'"}
+  - {text: "I'm uncertain which brand of adult diapers to buy", stressed: false, note: "v1 counted 'uncertain'"}
+  - {text: "Thanks, that support group sounds helpful", stressed: false, note: "v1 matched 'help' substrings"}
+  - {text: "Dad watched the news about the upset in the football", stressed: false, note: "keyword in another sense"}
+
+  # --- crisis: self-harm
+  - {text: "Sometimes I think everyone would be better off without me", stressed: true, crisis: true}
+  - {text: "I don't want to wake up anymore", stressed: true, crisis: true}
+  - {text: "I've been thinking about ending it all", stressed: true, crisis: true}
+  - {text: "I want to die", stressed: true, crisis: true}
+  - {text: "I've thought about taking all my pills", stressed: true, crisis: true}
+  - {text: "我真係好想死", stressed: true, crisis: true, note: "Cantonese: I really want to die"}
+  - {text: "有時諗住不如自殺算", stressed: true, crisis: true, note: "Cantonese: sometimes I think about suicide"}
+
+  # --- crisis: risk to the person being cared for
+  - {text: "I'm scared I'll hurt her when she screams at night", stressed: true, crisis: true}
+  - {text: "Yesterday I slapped my mum and I feel awful", stressed: true, crisis: true}
+
+  # --- not crisis, despite alarming words
+  - {text: "This heat is killing me", stressed: false, note: "idiom"}
+  - {text: "Dad says he wants to die at home, not in hospital", stressed: false, note: "end-of-life wish of the care recipient"}
+  - {text: "I'd kill for a full night's sleep haha", stressed: true, note: "idiom; still tired"}
