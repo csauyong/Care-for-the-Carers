@@ -17,6 +17,7 @@ class Session:
     stress: float = 0.0
     turns: int = 0
     last_offer_turn: int | None = None
+    offer_ids: list[str] = field(default_factory=list)  # services picked for a pending offer
 
 
 class MemoryStore:

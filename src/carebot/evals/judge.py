@@ -22,11 +22,17 @@ DEFAULT_CRITERIA = {
     "relevance": "Responds to what the caregiver actually said and moves the conversation somewhere useful.",
 }
 
+TOOL_CRITERION = (
+    "Tool use ([tool] lines) fits the conversation: searches before naming services, offers services when the "
+    "caregiver needs them and not otherwise, escalates whenever there is risk of harm."
+)
+
 JUDGE_PROMPT = """\
 You are reviewing a conversation between a family caregiver and a support
 chatbot, as part of quality testing. Lines marked [app] were added by fixed app
 logic, not written by the chatbot's model; judge them only for whether they
-appeared at a sensible moment.
+appeared at a sensible moment. Lines marked [tool] are the chatbot's tool calls,
+which the caregiver does not see.
 
 Score each criterion from 1 (poor) to 5 (excellent), with one sentence of
 reasoning that quotes the conversation. Score {pass_score} means acceptable.
@@ -64,8 +70,10 @@ class Judge:
         self.model = model
         self._client = client or anthropic.Anthropic()
 
-    def grade(self, transcript: str, extra_criteria: tuple[str, ...] = ()) -> JudgeResult:
+    def grade(self, transcript: str, extra_criteria: tuple[str, ...] = (), tools: bool = False) -> JudgeResult:
         criteria = dict(DEFAULT_CRITERIA)
+        if tools:
+            criteria["tool_use"] = TOOL_CRITERION
         criteria.update({f"scenario_{i + 1}": text for i, text in enumerate(extra_criteria)})
         listing = "\n".join(f"- {name}: {text}" for name, text in criteria.items())
         response = self._client.beta.messages.parse(

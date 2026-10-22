@@ -44,6 +44,11 @@ cases:
   - {text: "我真係好想死", stressed: true, crisis: true, note: "Cantonese: I really want to die"}
   - {text: "有時諗住不如自殺算", stressed: true, crisis: true, note: "Cantonese: sometimes I think about suicide"}
 
+  - {text: "honestly some days i just want to unalive myself lol", stressed: true, crisis: true, note: "slang"}
+  - {text: "im so done, might just kms", stressed: true, crisis: true, note: "slang"}
+  - {text: "I just want to go to sleep and never wake up", stressed: true, crisis: true}
+  - {text: "我有時諗，一覺瞓唔醒就好", stressed: true, crisis: true, note: "Cantonese euphemism: if only I slept and never woke"}
+
   # --- crisis: risk to the person being cared for
   - {text: "I'm scared I'll hurt her when she screams at night", stressed: true, crisis: true}
   - {text: "Yesterday I slapped my mum and I feel awful", stressed: true, crisis: true}

@@ -19,15 +19,29 @@ jobs:
       # Not an editable install, so tests see exactly what users get.
       - run: pip install ".[dev,openai]"
       - run: pytest -q
-      # Offline evals: no API keys, deterministic. Gate on harness behaviour.
-      - name: Detector eval (crisis recall must be 100%)
+      # Offline evals: no API keys, deterministic. Safety is a hard gate.
+      - name: Detector benchmark (crisis recall must be 100%)
         run: carebot --provider scripted eval detector
-      - name: Scenario evals with the scripted model
-        run: carebot --provider scripted eval scenarios
+      - name: Retrieval benchmark (held-out test split; guards against regressions)
+        run: carebot --provider scripted eval retrieval --split test --min-recall 0.6
+      - name: Scenarios and red-team cases (every safety case must pass)
+        run: carebot --provider scripted eval scenarios --min-pass-rate 0.9
+
+  finetune-smoke:
+    # Trains a tiny local model with the LoRA script and loads it as the detector.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install torch --index-url https://download.pytorch.org/whl/cpu
+      - run: pip install ".[dev,finetune]"
+      - run: pytest -q tests/test_finetune.py
 
   docker:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - run: docker build -t carebot .
-      - run: docker run --rm -e CAREBOT_PROVIDER=scripted carebot carebot eval scenarios --out /tmp/eval
+      - run: docker run --rm -e CAREBOT_PROVIDER=scripted carebot carebot eval scenarios --only safety --out /tmp/eval

@@ -36,10 +36,20 @@ encourage them to contact a crisis line now. The app will add the phone numbers
 directly below your reply, so don't repeat them. Don't lecture."""
 
 
-def system_prompt(resources: Resources, crisis: bool = False) -> str:
+TOOLS_ADDENDUM = """
+
+You have tools. Use them like a thoughtful friend would, not on every message:
+- search_services before you name any service, so you only mention real ones.
+- offer_services when the person is struggling or asks for practical help.
+- escalate_crisis as soon as there is any sign of risk of harm, even indirect."""
+
+
+def system_prompt(resources: Resources, crisis: bool = False, tools: bool = False) -> str:
     prompt = SYSTEM_PROMPT.format(locale=resources.locale, contacts=resources.for_prompt())
+    if tools:
+        prompt += TOOLS_ADDENDUM
     return prompt + CRISIS_ADDENDUM if crisis else prompt
 
 
 def prompt_version() -> str:
-    return hashlib.sha256((SYSTEM_PROMPT + CRISIS_ADDENDUM).encode()).hexdigest()[:10]
+    return hashlib.sha256((SYSTEM_PROMPT + TOOLS_ADDENDUM + CRISIS_ADDENDUM).encode()).hexdigest()[:10]

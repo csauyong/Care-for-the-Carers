@@ -6,7 +6,8 @@ from .agent import CareAgent
 from .config import Settings
 from .llm import AnthropicChat, ChatModel, OpenAIChat, ScriptedChat
 from .resources import Resources
-from .signals import Detector, KeywordDetector, LLMDetector
+from .retrieval import LLMRecommender, ResourceRetriever
+from .signals import Detector, FinetunedDetector, KeywordDetector, LLMDetector
 from .store import MemoryStore, SQLiteStore
 from .tracing import Tracer
 
@@ -23,22 +24,36 @@ def build_model(settings: Settings) -> ChatModel:
 
 def build_detector(settings: Settings) -> Detector:
     if settings.detector == "llm":
-        # The LLM detector always uses Claude, whatever provider writes the replies.
-        model = settings.model if settings.provider == "anthropic" and settings.model else DEFAULT_ANTHROPIC_MODEL
-        return LLMDetector(model=model)
+        return LLMDetector(model=_claude_model(settings))
+    if settings.detector == "finetuned":
+        return FinetunedDetector(settings.finetuned_model)
     return KeywordDetector()
+
+
+def _claude_model(settings: Settings) -> str:
+    """Claude-only helpers (LLM detector, LLM recommender) use Claude whatever provider writes replies."""
+    return settings.model if settings.provider == "anthropic" and settings.model else DEFAULT_ANTHROPIC_MODEL
+
+
+def build_retriever(settings: Settings, resources: Resources):
+    if settings.retriever == "llm":
+        return LLMRecommender(resources.support, model=_claude_model(settings))
+    return ResourceRetriever(resources.support)
 
 
 def build_agent(settings: Settings, *, persistent: bool = True, model: ChatModel | None = None) -> CareAgent:
     """`persistent=False` keeps sessions in memory and skips traces (used by evals)."""
     store = SQLiteStore(settings.data_dir / "sessions.db") if persistent else MemoryStore()
     tracer = Tracer(settings.data_dir / "traces.jsonl" if persistent else None, settings.trace_content)
+    resources = Resources.load(settings.resources_file)
     return CareAgent(
         model=model or build_model(settings),
         detector=build_detector(settings),
         store=store,
-        resources=Resources.load(settings.resources_file),
+        resources=resources,
+        retriever=build_retriever(settings, resources),
         tracer=tracer,
+        mode=settings.agent,
         stress_threshold=settings.stress_threshold,
         history_turns=settings.history_turns,
     )

@@ -9,7 +9,9 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 PROVIDERS = ("anthropic", "openai", "scripted")
-DETECTORS = ("keyword", "llm")
+DETECTORS = ("keyword", "llm", "finetuned")
+AGENT_MODES = ("policy", "tools")
+RETRIEVERS = ("bm25", "llm")
 
 
 class ConfigError(ValueError):
@@ -24,6 +26,9 @@ class Settings:
     effort: str = "low"
     openai_base_url: str | None = None
     detector: str = "keyword"
+    agent: str = "policy"
+    retriever: str = "bm25"
+    finetuned_model: str | None = None
     data_dir: Path = Path("data")
     trace_content: bool = True
     resources_file: Path | None = None
@@ -49,6 +54,9 @@ class Settings:
             effort=env("CAREBOT_EFFORT", "low"),
             openai_base_url=env("OPENAI_BASE_URL") or None,
             detector=env("CAREBOT_DETECTOR", "keyword").lower(),
+            agent=env("CAREBOT_AGENT", "policy").lower(),
+            retriever=env("CAREBOT_RETRIEVER", "bm25").lower(),
+            finetuned_model=env("CAREBOT_FINETUNED_MODEL") or None,
             data_dir=Path(env("CAREBOT_DATA_DIR", "data")),
             trace_content=env("CAREBOT_TRACE_CONTENT", "true").lower() not in ("0", "false", "no"),
             resources_file=Path(resources_file) if resources_file else None,
@@ -67,6 +75,12 @@ class Settings:
             problems.append(f"CAREBOT_PROVIDER must be one of {', '.join(PROVIDERS)} (got {self.provider!r})")
         if self.detector not in DETECTORS:
             problems.append(f"CAREBOT_DETECTOR must be one of {', '.join(DETECTORS)} (got {self.detector!r})")
+        if self.agent not in AGENT_MODES:
+            problems.append(f"CAREBOT_AGENT must be one of {', '.join(AGENT_MODES)} (got {self.agent!r})")
+        if self.retriever not in RETRIEVERS:
+            problems.append(f"CAREBOT_RETRIEVER must be one of {', '.join(RETRIEVERS)} (got {self.retriever!r})")
+        if self.detector == "finetuned" and not self.finetuned_model:
+            problems.append("CAREBOT_FINETUNED_MODEL must point to a trained adapter (see finetune/README.md)")
         if self.provider == "openai" and not self.model:
             problems.append("CAREBOT_MODEL is required with the openai provider (for example llama3.1 on Ollama)")
         if need_telegram and not self.telegram_token:

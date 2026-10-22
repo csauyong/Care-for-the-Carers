@@ -1,0 +1,109 @@
+# Labelled conversations for `carebot eval retrieval`.
+#
+# messages: what the carer said (the last few messages are the query).
+# relevant: resource-bank ids that would actually help; a hit on any counts.
+# split:    tune retrieval keywords on `dev` only. `test` cases are for
+#           reporting; editing keywords to fix a test miss inflates the score.
+cases:
+  # --- dev
+  - id: dev-respite-surgery
+    split: dev
+    messages: ["I need knee surgery next month and there's nobody to look after mum while I'm in hospital"]
+    relevant: [respite-elderly, carer-hotline]
+  - id: dev-money
+    split: dev
+    messages: ["I quit my job to care for dad and the bills are piling up"]
+    relevant: [carer-allowance]
+  - id: dev-dementia-wandering
+    split: dev
+    messages: ["Mum has Alzheimer's and keeps wandering out at night"]
+    relevant: [dementia-dcss, hkada]
+  - id: dev-stroke-lifting
+    split: dev
+    messages: ["Since his stroke I have to lift him into the wheelchair and my back is killing me"]
+    relevant: [stroke-hksr, stroke-association]
+  - id: dev-schizophrenia
+    split: dev
+    messages: ["My son has schizophrenia and I don't know how to support him when he hears voices"]
+    relevant: [iccmw]
+  - id: dev-epa
+    split: dev
+    messages: ["Dad's memory is going and I'm worried about who will handle his bank account"]
+    relevant: [legal-epa]
+  - id: dev-talk
+    split: dev
+    messages: ["I just need to talk to someone, I feel so alone with this"]
+    relevant: [carer-hotline]
+  - id: dev-cantonese-respite
+    split: dev
+    messages: ["我想抖下，有冇地方可以暫時照顧阿媽幾日？"]
+    relevant: [respite-elderly, carer-hotline]
+  - id: dev-cantonese-dementia
+    split: dev
+    messages: ["阿爸有認知障礙，成日唔記得食咗飯未"]
+    relevant: [dementia-dcss, hkada]
+  - id: dev-skills
+    split: dev
+    messages: ["Are there any courses that teach how to care for someone at home?"]
+    relevant: [carer-gateway, dementia-dcss, stroke-hksr]
+
+  # --- test (don't tune keywords on these)
+  - id: test-holiday
+    split: test
+    messages: ["My sister's wedding is in Taiwan and I can't take grandma. Is there somewhere she could stay for a week?"]
+    relevant: [respite-elderly, carer-hotline]
+  - id: test-low-income
+    split: test
+    messages: ["We live on my husband's pension only. Is there any financial help for people caring full time?"]
+    relevant: [carer-allowance]
+  - id: test-forgetful
+    split: test
+    messages: ["She asks me the same question forty times a day and got lost coming back from the market"]
+    relevant: [dementia-dcss, hkada]
+  - id: test-peer-group
+    split: test
+    messages: ["I'd like to meet other people looking after a parent with dementia"]
+    relevant: [hkada, dementia-dcss]
+  - id: test-stroke-rehab
+    split: test
+    messages: ["Dad came home from hospital after his stroke last week. His right side is weak and he needs physio"]
+    relevant: [stroke-hksr, stroke-association]
+  - id: test-bipolar
+    split: test
+    messages: ["My wife has bipolar disorder and I'm struggling to cope with her episodes"]
+    relevant: [iccmw, mhahk]
+  - id: test-capacity
+    split: test
+    messages: ["The bank won't let me access mum's savings to pay for her care. What can I do?"]
+    relevant: [legal-epa]
+  - id: test-end-of-life
+    split: test
+    messages: ["The doctor says dad's dementia is advanced. How do we plan for the end?"]
+    relevant: [ha-dementia-info]
+  - id: test-night-exhaustion
+    split: test
+    messages: ["It's 3am again, I'm so tired, I don't know who to call"]
+    relevant: [carer-hotline]
+  - id: test-directory
+    split: test
+    messages: ["Where can I find what services exist in Sha Tin for carers?"]
+    relevant: [carer-gateway, carer-hotline]
+  - id: test-cantonese-money
+    split: test
+    messages: ["我辭咗工照顧阿媽，而家冇收入，政府有冇咩幫到手？"]
+    relevant: [carer-allowance]
+  - id: test-cantonese-stroke
+    split: test
+    messages: ["老公中風之後要坐輪椅，我唔識點樣扶佢"]
+    relevant: [stroke-hksr, stroke-association]
+  - id: test-cantonese-mental
+    split: test
+    messages: ["個女有思覺失調，我唔知點幫佢"]
+    relevant: [iccmw]
+  - id: test-multi-turn
+    split: test
+    messages:
+      - "Hi, I look after my mum"
+      - "She has dementia and I've been doing it alone for three years"
+      - "I really need a few days off to rest"
+    relevant: [respite-elderly, carer-hotline]

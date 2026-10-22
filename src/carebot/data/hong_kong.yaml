@@ -2,7 +2,10 @@
 #
 # The model is told to mention only contacts listed here, and the eval harness
 # fails any reply that contains a phone number or link that isn't in this file.
-# Contacts change: re-check every entry and bump `last_reviewed` at least yearly.
+#
+# `support` is the resource bank the bot retrieves from. `tags` and `keywords`
+# drive retrieval (English and Cantonese); `source` is where each entry was
+# checked. Contacts change: re-check every entry and bump `last_reviewed`.
 locale: Hong Kong
 last_reviewed: 2026-10
 
@@ -17,17 +20,102 @@ crisis_lines:
   - name: Samaritan Befrienders Hong Kong (24 hours, Cantonese)
     phone: "2389 2222"
 
-# Shared when a stressed carer accepts a referral.
 support:
-  - name: Designated Hotline for Carer Support (24 hours, Social Welfare Department)
+  - id: carer-hotline
+    name: Designated Hotline for Carer Support (24 hours, Social Welfare Department)
     phone: "182 183"
-    note: Social workers offer emotional support, assess your needs and can help arrange respite care.
-  - name: Hong Kong Alzheimer's Disease Association
+    note: Social workers offer emotional support, assess your needs, refer you to services and can arrange respite care.
+    tags: [emotional support, counselling, referral, respite, emergency, any carer]
+    keywords: [talk to someone, social worker, overwhelmed, exhausted, alone, nobody helps, 照顧者熱線, 社工, 支援, 傾訴, 好攰]
+    source: https://swd.gov.hk/en/pubsvc/rehab/cat_supportcom/scpd/dhcs
+
+  - id: carer-gateway
+    name: Information Gateway for Carers
+    url: https://www.carers.hk/
+    note: Social Welfare Department's directory of carer services, caring skills and local activities, run by the HK Council of Social Service.
+    tags: [information, directory, caring skills, activities, training]
+    keywords: [find services, near me, district, how to care, skills, course, 照顧者資訊網, 照顧技巧, 活動]
+    source: https://carers.hk/en-us/about
+
+  - id: respite-elderly
+    name: Respite services for elderly persons (Social Welfare Department)
+    url: https://www.ves.swd.gov.hk/
+    note: Day respite, or a residential respite stay of 1 to 42 days, so you can rest, travel or go to hospital. Check vacancies online or call 182 183 to arrange.
+    tags: [respite, break, short-term care, elderly, residential care, day care]
+    keywords: [need a break, rest, holiday, travel, surgery, hospital, look after her while, look after him while, nobody to look after, temporary, 暫托, 日間暫托, 住宿暫托, 抖下, 休息, 入院]
+    source: https://www.info.gov.hk/gia/general/202312/01/P2023113000380.htm
+
+  - id: carer-allowance
+    name: Living Allowance for Carers of Elderly Persons from Low-income Families
+    url: https://www.swd.gov.hk/en/pubsvc/elderly/cat_careersupp/allowanceforcarersoftheelderly/
+    note: A monthly allowance for low-income carers who give at least 80 hours of care a month to an older person.
+    tags: [money, financial support, allowance, low income]
+    keywords: [money, afford, cost, expensive, quit my job, stopped working, income, bills, subsidy, 津貼, 錢, 經濟, 辭工, 生活津貼, 照顧者津貼]
+    source: https://www.swd.gov.hk/en/pubsvc/elderly/cat_careersupp/allowanceforcarersoftheelderly/
+
+  - id: dementia-dcss
+    name: Dementia Community Support Scheme (District Elderly Community Centres)
+    url: https://www.swd.gov.hk/en/pubsvc/elderly/cat_careersupp/dcss/index.html
+    note: Support for people with mild or moderate dementia and their carers, including carer training, stress management and counselling.
+    tags: [dementia, alzheimer's, memory, carer training, counselling]
+    keywords: [dementia, alzheimer, memory loss, forgets, confused, wandering, repeats, sundowning, diagnosis, 認知障礙, 腦退化, 失智, 長者地區中心, 唔記得, 亂走]
+    source: https://swd.gov.hk/en/pubsvc/elderly/cat_careersupp/dcss
+
+  - id: hkada
+    name: Hong Kong Alzheimer's Disease Association
     url: https://www.hkada.org.hk/
     note: Carer support groups, counselling and dementia care training.
-  - name: Mental Health Association of Hong Kong
+    tags: [dementia, alzheimer's, support group, peer support, carer training]
+    keywords: [dementia, alzheimer, support group, other carers, people like me, 認知障礙, 腦退化, 互助小組, 同路人]
+    source: https://www.alzint.org/member/hong-kong-alzheimers-disease-association/
+
+  - id: iccmw
+    name: Integrated Community Centres for Mental Wellness (Social Welfare Department)
+    url: https://swd.gov.hk/en/pubsvc/rehab/cat_supportcom/centrebase/iccmw
+    note: Free district centres for people in mental recovery and their carers, with counselling and support groups. You can apply yourself.
+    tags: [mental health, counselling, mental illness, schizophrenia, depression, carer of person in mental recovery]
+    keywords: [mental illness, schizophrenia, bipolar, psychosis, depression, hearing voices, psychiatric, 精神健康, 精神病, 思覺失調, 抑鬱, 社區精神健康綜合服務中心]
+    source: https://swd.gov.hk/en/pubsvc/rehab/cat_supportcom/centrebase/iccmw
+
+  - id: mhahk
+    name: Mental Health Association of Hong Kong
     url: https://www.mhahk.org.hk/
     note: Community mental health services and carer programmes.
+    tags: [mental health, carer programmes]
+    keywords: [mental health, my own mental health, anxious, depressed, 精神健康協會, 情緒]
+    source: https://www.mhahk.org.hk/
+
+  - id: stroke-hksr
+    name: Hong Kong Society for Rehabilitation, Community Rehabilitation Network
+    phone: "2534 3300"
+    note: Stroke caregiver support programme at community centres across Hong Kong, with training and support groups.
+    tags: [stroke, rehabilitation, physical disability, wheelchair, carer training]
+    keywords: [stroke, paralysed, wheelchair, rehab, physiotherapy, lifting, transfer, mobility, 中風, 復康, 輪椅, 扶抱]
+    source: https://www.commchest.org/en/projects/member_agency/view/109
+
+  - id: stroke-association
+    name: Hong Kong Stroke Association
+    phone: "2308 8257"
+    note: Self-help support group for stroke patients and their families.
+    tags: [stroke, support group, peer support]
+    keywords: [stroke, other families, support group, 中風, 互助, 病人組織]
+    source: https://carers.hk/en-us/unit/3501
+
+  - id: legal-epa
+    name: Community Legal Information Centre (HKU) on Enduring Powers of Attorney
+    url: https://clic.org.hk/en/topics/enduring_Powers_of_Attorney/all
+    note: Plain-language guide to making an Enduring Power of Attorney so someone can manage a person's finances if they lose mental capacity.
+    tags: [legal, finances, power of attorney, mental capacity]
+    keywords: [lawyer, legal, bank account, property, sign, power of attorney, capacity, money matters, will, 持久授權書, 法律, 銀行, 授權]
+    source: https://clic.org.hk/en/topics/enduring_Powers_of_Attorney/all
+
+  - id: ha-dementia-info
+    name: Hospital Authority Smart Patient, dementia section
+    url: https://www21.ha.org.hk/smartpatient/Dementia/Highlights
+    note: Hospital Authority information on dementia, including medico-legal, financial and advance care planning.
+    tags: [dementia, medical information, advance care planning, end of life]
+    keywords: [advance care planning, end of life, die at home, hospital, doctor, medication information, prognosis, 預設照顧計劃, 醫管局, 晚期]
+    source: https://www21.ha.org.hk/smartpatient/Dementia/Highlights
 
 messages:
   welcome: "Hi, I'm here for you 💛 How are you doing today?"

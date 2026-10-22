@@ -32,6 +32,8 @@ class Tracer:
             event["user_id"] = pseudonymize(event["user_id"])
         if not self.include_content:
             event = {k: v for k, v in event.items() if k not in _CONTENT_KEYS}
+            if "trajectory" in event:  # tool arguments quote the conversation
+                event["trajectory"] = [step["tool"] for step in event["trajectory"]]
         line = json.dumps(event, ensure_ascii=False)
         with self._lock, self.path.open("a", encoding="utf-8") as f:
             f.write(line + "\n")

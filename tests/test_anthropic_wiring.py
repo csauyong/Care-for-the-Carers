@@ -30,14 +30,17 @@ def api():
         def do_POST(self):
             body = json.loads(self.rfile.read(int(self.headers["Content-Length"])))
             state.requests.append({"path": self.path, "headers": dict(self.headers), "body": body})
-            text = state.reply_text(body) if callable(state.reply_text) else state.reply_text
+            reply = state.reply_text(body) if callable(state.reply_text) else state.reply_text
+            # A reply is plain text, or a list of content blocks (e.g. tool_use).
+            content = reply if isinstance(reply, list) else [{"type": "text", "text": reply}]
+            stop = "tool_use" if any(b["type"] == "tool_use" for b in content) else state.stop_reason
             payload = {
                 "id": "msg_test",
                 "type": "message",
                 "role": "assistant",
                 "model": body["model"],
-                "content": [{"type": "text", "text": text}],
-                "stop_reason": state.stop_reason,
+                "content": content,
+                "stop_reason": stop,
                 "stop_sequence": None,
                 "usage": {"input_tokens": 11, "output_tokens": 7},
             }
@@ -132,9 +135,53 @@ def test_live_eval_commands_end_to_end(api, monkeypatch, tmp_path):
     report = json.loads(next(out.iterdir()).joinpath("report.json").read_text())
     trial = report["trials"][0]
     assert trial["error"] is None, trial["error"]
-    assert len(trial["transcript"]) == 8
+    typed = [t for t in trial["transcript"] if not t["user"].startswith("[taps")]
+    assert len(typed) == 8
     assert trial["judge"]["passed"] and trial["passed"]
     assert "offer_resources" in trial["transcript"][0]["actions"]
+    # The simulated caregiver tapped Yes on the offer and got services from the bank.
+    assert trial["transcript"][1]["user"] == "[taps yes]" and trial["transcript"][1]["recommended"]
 
     out = tmp_path / "scenarios"
     assert main(["eval", "scenarios", "--judge", "--only", "safety", "--out", str(out)]) == 0
+
+
+def test_tool_loop_through_the_sdk(api):
+    """tools mode: Claude calls search_services, then escalate_crisis, then answers."""
+    from carebot.agent import CareAgent
+    from carebot.signals import KeywordDetector
+
+    def reply(body):
+        last = body["messages"][-1]["content"]
+        results = [b for b in last if isinstance(b, dict) and b.get("type") == "tool_result"] if isinstance(last, list) else []
+        if not results:
+            return [{"type": "tool_use", "id": "tu_1", "name": "search_services", "input": {"query": "respite"}}]
+        if results[0]["tool_use_id"] == "tu_1":
+            return [{"type": "tool_use", "id": "tu_2", "name": "escalate_crisis", "input": {"reason": "hopeless"}}]
+        return "I'm really glad you told me. You don't have to carry this alone."
+
+    api.reply_text = reply
+    agent = CareAgent(AnthropicChat(client=api.client), KeywordDetector(), mode="tools")
+    out = agent.respond("u", "I can't see the point of going on")
+    assert [s["tool"] for s in out.trajectory] == ["search_services", "escalate_crisis"]
+    assert out.escalation == "model" and "18111" in out.text
+    assert out.completion.input_tokens == 33  # summed over the three model calls
+
+    first, second, third = (r["body"] for r in api.requests[-3:])
+    assert {t["name"] for t in first["tools"]} == {"search_services", "offer_services", "escalate_crisis"}
+    assert all(t["strict"] is True for t in first["tools"])
+    # Each step re-sends the assistant tool_use turn, then one user message with the tool result.
+    assert second["messages"][-2]["role"] == "assistant"
+    assert second["messages"][-1]["content"][0]["type"] == "tool_result"
+    assert "respite-elderly" in second["messages"][-1]["content"][0]["content"]
+    assert len(third["messages"]) == len(second["messages"]) + 2
+
+
+def test_llm_recommender_parses_picks(api):
+    from carebot.resources import Resources
+    from carebot.retrieval import LLMRecommender
+
+    api.reply_text = json.dumps({"service_ids": ["carer-allowance", "made-up-id", "carer-hotline"]})
+    rec = LLMRecommender(Resources.load().support, client=api.client)
+    assert [c.id for c in rec.search("money is tight")] == ["carer-allowance", "carer-hotline"]
+    assert "carer-allowance" in api.requests[-1]["body"]["system"]

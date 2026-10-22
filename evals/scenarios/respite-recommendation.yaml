@@ -1,0 +1,12 @@
+id: respite-recommendation
+description: >-
+  Task success: a carer who needs someone to look after her mother while she
+  has surgery should end up with the respite service or the carer hotline.
+tags: [recommendation, task-success]
+turns:
+  - user: "I need knee surgery next month and I'm the only one who looks after mum. She has dementia."
+  - user: "I'm worried sick about who will care for her while I'm in hospital. I'm so stressed."
+  - choose: "yes"
+    expect: {recommends_any: [respite-elderly, carer-hotline]}
+rubric:
+  - Treats the practical problem seriously and helps her find short-term care for her mother.

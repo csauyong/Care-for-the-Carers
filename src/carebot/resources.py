@@ -20,6 +20,10 @@ class Contact:
     phone: str | None = None
     url: str | None = None
     note: str | None = None
+    id: str = ""
+    tags: tuple[str, ...] = ()
+    keywords: tuple[str, ...] = ()
+    source: str | None = None
 
     def render(self) -> str:
         detail = " · ".join(x for x in (self.phone, self.url) if x)
@@ -43,8 +47,8 @@ class Resources:
         raw = yaml.safe_load(text)
         return cls(
             locale=raw["locale"],
-            crisis_lines=tuple(Contact(**c) for c in raw["crisis_lines"]),
-            support=tuple(Contact(**c) for c in raw["support"]),
+            crisis_lines=tuple(_contact(c) for c in raw["crisis_lines"]),
+            support=tuple(_contact(c) for c in raw["support"]),
             messages=raw["messages"],
         )
 
@@ -52,9 +56,13 @@ class Resources:
         lines = "\n".join(c.render() for c in self.crisis_lines)
         return f"{self.messages['crisis']}\n{lines}"
 
-    def support_block(self) -> str:
-        lines = "\n".join(c.render() for c in self.support)
+    def support_block(self, contacts: list[Contact] | None = None) -> str:
+        lines = "\n".join(c.render() for c in (contacts or self.support))
         return f"{self.messages['accepted']}\n{lines}\n\n{self.messages['accepted_outro']}"
+
+    def by_id(self, ids: list[str]) -> list[Contact]:
+        index = {c.id: c for c in self.support}
+        return [index[i] for i in ids if i in index]
 
     def for_prompt(self) -> str:
         """Plain list of every contact, for the system prompt."""
@@ -68,6 +76,13 @@ class Resources:
         found = [m.group(0) for m in _PHONE_RE.finditer(text) if _digits(m.group(0)) not in phones]
         found += [m.group(0) for m in _URL_RE.finditer(text) if _host(m.group(0)) not in hosts]
         return found
+
+
+def _contact(raw: dict) -> Contact:
+    raw = dict(raw)
+    for key in ("tags", "keywords"):
+        raw[key] = tuple(raw.get(key) or ())
+    return Contact(**raw)
 
 
 def _digits(phone: str) -> str:

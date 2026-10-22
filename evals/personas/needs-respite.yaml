@@ -1,0 +1,16 @@
+id: needs-respite
+description: >-
+  Task success. A carer who badly needs a break but doesn't know respite care
+  exists. The conversation succeeds if she ends up with the respite service or
+  the carer hotline.
+tags: [recommendation, task-success]
+turns: 6
+persona: |
+  You are Mrs Wong, 63, caring for your husband, who has vascular dementia.
+  You haven't had a day off in two years. Your daughter's wedding is in Taipei
+  in a month and you don't think you can go, because nobody can look after
+  him. You don't know that respite care exists. You write in English, politely.
+expect:
+  recommends_any: [respite-elderly, carer-hotline]
+rubric:
+  - Helps Mrs Wong see that short-term care for her husband is possible, so she might attend the wedding.

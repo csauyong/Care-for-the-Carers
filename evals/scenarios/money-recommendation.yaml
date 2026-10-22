@@ -1,0 +1,9 @@
+id: money-recommendation
+description: Task success for a financial need, written in Cantonese.
+tags: [recommendation, task-success, cantonese]
+turns:
+  - user: "我辭咗份工全職照顧阿爸，屋企好緊，好大壓力"
+  - choose: "yes"
+    expect: {recommends_any: [carer-allowance]}
+rubric:
+  - Replies in Cantonese and responds to the financial worry with care.

@@ -35,13 +35,16 @@ CRISIS_PATTERNS = [
     r"\b(don'?t|do not) want to (live|be alive|be here|wake up)( anymore)?\b",
     r"\bno (reason|point) (to|in) (live|living|going on)\b",
     r"\b(better off|be better) without me\b",
+    r"\bunalive\b",
+    r"\bkms\b",
+    r"\b(go to sleep|fall asleep) and (never|not) wake up\b",
     r"\boverdose\b",
     r"\b(take|taking|took|swallow|swallowing) (all|a lot of|a bottle of) (my|the|her|his|those)? ?(pills|tablets|medicine|meds)\b",
     # Risk to the person being cared for
     r"\b(scared|afraid|worried) (that )?i('ll| will| might| could)? (hurt|hit|harm|shake|kill)\b",
     r"\bi (hit|slapped|pushed|shook|hurt) (him|her|them|my (mum|mom|mother|dad|father|husband|wife|grandma|grandpa))\b",
     # Cantonese / Traditional Chinese
-    r"自殺", r"想死", r"唔想(再)?(生存|活)", r"不想(再)?活", r"輕生", r"了結(自己|生命)", r"傷害自己",
+    r"自殺", r"想死", r"唔(好|想)?再醒", r"一覺瞓(咗)?唔(好)?醒", r"唔想(再)?(生存|活)", r"不想(再)?活", r"輕生", r"了結(自己|生命)", r"傷害自己",
 ]
 
 _CJK = re.compile(r"[一-鿿]")
@@ -149,3 +152,51 @@ class LLMDetector:
             crisis=result.crisis or bool(keyword_crisis),
             evidence=[f"llm: {result.reason}", *keyword_crisis],
         )
+
+
+# GoEmotions labels that signal distress in a carer's message.
+DISTRESS_EMOTIONS = ("anger", "annoyance", "disappointment", "fear", "grief", "nervousness", "remorse", "sadness")
+
+
+class FinetunedDetector:
+    """A transformer emotion classifier fine-tuned with LoRA (see finetune/).
+
+    Stress comes from the classifier's distress emotions. Crisis still comes
+    only from the keyword screen: the classifier was not trained for it.
+    Needs the `finetune` extra (torch, transformers).
+    """
+
+    name = "finetuned"
+
+    def __init__(self, path: str, device: str | None = None):
+        import json
+        from pathlib import Path
+
+        import torch
+        from transformers import AutoModelForSequenceClassification, AutoTokenizer
+
+        meta = json.loads((Path(path) / "carebot_labels.json").read_text("utf-8"))
+        self._labels: list[str] = meta["labels"]
+        self._distress = [i for i, label in enumerate(self._labels) if label in meta.get("distress", DISTRESS_EMOTIONS)]
+        self._threshold = float(meta.get("threshold", 0.5))
+        self._torch = torch
+        self._device = device or ("cuda" if torch.cuda.is_available() else "cpu")
+        self._tokenizer = AutoTokenizer.from_pretrained(path)
+        self._model = AutoModelForSequenceClassification.from_pretrained(path).to(self._device).eval()
+
+    def emotions(self, text: str) -> dict[str, float]:
+        inputs = self._tokenizer(text, return_tensors="pt", truncation=True, max_length=128).to(self._device)
+        with self._torch.no_grad():
+            probs = self._torch.sigmoid(self._model(**inputs).logits)[0].tolist()
+        return dict(zip(self._labels, probs))
+
+    def detect(self, text: str) -> Signals:
+        probs = self.emotions(text)
+        distress = max((probs[self._labels[i]] for i in self._distress), default=0.0)
+        t = self._threshold
+        # Map confidence above the threshold onto the same 0-3 scale as the other detectors.
+        level = 0 if distress < t else 1 if distress < t + (1 - t) / 3 else 2 if distress < t + 2 * (1 - t) / 3 else 3
+        crisis = crisis_screen(text.lower())
+        top = sorted(probs.items(), key=lambda kv: kv[1], reverse=True)[:3]
+        evidence = [f"{label}:{p:.2f}" for label, p in top] + crisis
+        return Signals(stress=float(level + (3 if crisis else 0)), crisis=bool(crisis), evidence=evidence)
